@@ -11,7 +11,7 @@
 <body>
     <h1>TON Cüzdanınızı Bağlayın</h1>
 
-    <!-- Cüzdan Bağlantı Durumu -->
+    <!-- Bağlantı durumu -->
     <p id="status">Cüzdan bağlı değil.</p>
 
     <!-- Cüzdan Bağlama Butonu -->
@@ -29,6 +29,7 @@
         // Cüzdan Bağlama İşlemi
         async function connectToWallet() {
             try {
+                // Cüzdan bağlantısını başlat
                 connectedWallet = await tonConnectUI.connectWallet();
                 console.log("Cüzdan Bağlandı:", connectedWallet);
 
