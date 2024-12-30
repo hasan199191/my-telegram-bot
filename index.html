@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Telegram Wallet Bağlantısı</title>
+    <title>Cüzdan Bağla</title>
     <style>
         body {
             font-family: Arial, sans-serif;
@@ -27,11 +27,19 @@
 </head>
 <body>
 
-<h1>Connect Wallet</h1>
-<p>Telegram Wallet cüzdanınızı bağlamak için aşağıdaki butona tıklayın.</p>
+<h1>TON Cüzdanınızı Bağlayın</h1>
+<p>Cüzdanınızı bağlamak için aşağıdaki butona tıklayın:</p>
 
-<!-- Telegram Wallet Deep Link Butonu -->
-<a href="ton://resolve?address=UQBCeDdSn2-f2YrGA_YODDqgORHXCfO9elNo7R1TcMB9XMcu" class="button" target="_blank">Cüzdanı Bağla</a>
+<!-- Cüzdan bağlama butonu -->
+<button class="button" onclick="connectWallet()">Cüzdan Bağla</button>
+
+<script>
+    function connectWallet() {
+        // Kullanıcıyı Telegram Wallet veya ToonKeeper'e yönlendirmek için deep link
+        const deepLink = "ton://resolve?address=YOUR_COIN_ADDRESS";
+        window.location.href = deepLink;
+    }
+</script>
 
 </body>
 </html>
