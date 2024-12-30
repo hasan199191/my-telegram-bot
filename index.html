@@ -1,45 +1,75 @@
 <!DOCTYPE html>
-<html lang="tr">
+<html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Cüzdan Bağla</title>
+    <title>TON Connect Web Demo</title>
+    <script src="https://cdn.tonhubapi.com/tonconnect.js"></script>
     <style>
         body {
             font-family: Arial, sans-serif;
             text-align: center;
-            margin-top: 50px;
+            padding: 20px;
+            background-color: #f4f4f4;
         }
-        .button {
-            background-color: #4CAF50; /* Yeşil renk */
+
+        button {
+            background-color: #4CAF50;
             color: white;
             padding: 15px 32px;
-            text-align: center;
             font-size: 16px;
-            border: none;
-            border-radius: 8px;
             cursor: pointer;
+            border: none;
+            border-radius: 5px;
         }
-        .button:hover {
+
+        button:hover {
             background-color: #45a049;
+        }
+
+        .status {
+            margin-top: 20px;
+            font-size: 18px;
+            font-weight: bold;
         }
     </style>
 </head>
 <body>
+    <h1>Welcome to TON Connect</h1>
+    <p>Connect your TON wallet and perform blockchain transactions through this web app.</p>
 
-<h1>TON Cüzdanınızı Bağlayın</h1>
-<p>Cüzdanınızı bağlamak için aşağıdaki butona tıklayın:</p>
+    <!-- Button to trigger wallet connection -->
+    <button id="connectButton">Connect TON Wallet</button>
 
-<!-- Cüzdan bağlama butonu -->
-<button class="button" onclick="connectWallet()">Cüzdan Bağla</button>
+    <!-- Status message -->
+    <div class="status" id="status">Not connected</div>
 
-<script>
-    function connectWallet() {
-        // Kullanıcıyı Telegram Wallet veya ToonKeeper'e yönlendirmek için deep link
-        const deepLink = "ton://resolve?address=YOUR_COIN_ADDRESS";
-        window.location.href = deepLink;
-    }
-</script>
+    <script>
+        // Wait until the TON Connect library is loaded
+        window.onload = () => {
+            const connectButton = document.getElementById('connectButton');
+            const status = document.getElementById('status');
 
+            // Initialize TON Connect
+            const tonConnect = new TonConnect();
+
+            // Event listener to trigger TON Connect wallet connection
+            connectButton.addEventListener('click', async () => {
+                try {
+                    // Request connection to wallet
+                    const connection = await tonConnect.connect();
+
+                    // If successful, update status
+                    status.innerText = `Connected to wallet: ${connection.walletAddress}`;
+                    
+                    // Perform additional actions with connected wallet, such as sending transactions
+                    // Example: await sendTransaction(connection);
+                    
+                } catch (error) {
+                    status.innerText = `Error: ${error.message}`;
+                }
+            });
+        };
+    </script>
 </body>
 </html>
