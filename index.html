@@ -4,80 +4,46 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>TON Connect Uygulama</title>
-    <!-- TON Connect SDK -->
+    <title>TON Cüzdan Bağla</title>
     <script src="https://cdn.tonhubapi.com/tonconnect.js"></script>
 </head>
 
 <body>
     <h1>TON Cüzdanınızı Bağlayın</h1>
 
-    <!-- Cüzdan Bağlama Butonu -->
-    <div id="ton-connect"></div>
-
-    <!-- Durum Gösterimi -->
+    <!-- Cüzdan Bağlantı Durumu -->
     <p id="status">Cüzdan bağlı değil.</p>
 
+    <!-- Cüzdan Bağlama Butonu -->
+    <button id="connectButton">Cüzdan Bağla</button>
+
     <script>
-        // TON Connect UI nesnesini başlat
         const tonConnectUI = new TON_CONNECT_UI.TonConnectUI({
-            manifestUrl: 'https://hasan199191.github.io/my-telegram-bot/tonconnect-manifest.json', // Manifest dosyanızın URL'si
-            buttonRootId: 'ton-connect' // Cüzdan Bağlama Butonunun ID'si
+            manifestUrl: 'https://hasan199191.github.io/my-telegram-bot/tonconnect-manifest.json', // Manifest URL
+            buttonRootId: 'ton-connect'
         });
 
-        // Cüzdan bağlantısını başlatma fonksiyonu
+        // Bağlantı durumu
+        let connectedWallet = null;
+
+        // Cüzdan Bağlama İşlemi
         async function connectToWallet() {
             try {
-                const connectedWallet = await tonConnectUI.connectWallet();
+                connectedWallet = await tonConnectUI.connectWallet();
                 console.log("Cüzdan Bağlandı:", connectedWallet);
 
                 // Bağlantı başarılı olduğunda yapılacak işlemler
                 document.getElementById('status').innerText = `Cüzdan Bağlandı: ${connectedWallet.walletAddress}`;
+                document.getElementById('connectButton').style.display = 'none';  // Bağlantı butonunu gizle
             } catch (error) {
                 console.error("Cüzdan Bağlanırken Hata:", error);
                 document.getElementById('status').innerText = `Hata: ${error.message}`;
             }
         }
 
-        // Bağlantı butonuna tıklama olayını ekle
-        tonConnectUI.addButtonEventListener('connect', connectToWallet);
-
-        // İşlem gönderme fonksiyonu
-        async function sendTransaction() {
-            const transaction = {
-                messages: [
-                    {
-                        address: "EQABa48hjKzg09hN_HjxOic7r8T1PleIy1dRd8NvZ3922MP0",  // Hedef adres
-                        amount: "20000000"  // Toncoin miktarı (nanoton cinsinden)
-                    }
-                ]
-            };
-
-            try {
-                const result = await tonConnectUI.sendTransaction(transaction);
-                console.log("İşlem Sonucu:", result);
-                alert("İşlem başarılı!");  // Kullanıcıya işlem durumu bildirimi
-            } catch (error) {
-                console.error("İşlem Gönderirken Hata:", error);
-                alert("İşlem gönderilirken hata oluştu.");
-            }
-        }
-
-        // Cüzdanı ayırma fonksiyonu
-        async function disconnectWallet() {
-            try {
-                await tonConnectUI.disconnect();
-                console.log("Cüzdan bağlantısı kesildi.");
-                document.getElementById('status').innerText = "Cüzdan bağlı değil.";
-            } catch (error) {
-                console.error("Cüzdanı ayırırken hata:", error);
-            }
-        }
+        // Cüzdan Bağla Butonu için Event Listener
+        document.getElementById('connectButton').addEventListener('click', connectToWallet);
     </script>
-
-    <!-- Cüzdan bağlantısı sonrasında işlem gönderme ve bağlantıyı kesme butonları -->
-    <button onclick="sendTransaction()">İşlem Gönder</button>
-    <button onclick="disconnectWallet()">Cüzdanı Ayır</button>
 
 </body>
 
