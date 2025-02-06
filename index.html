@@ -2,192 +2,103 @@
 <html lang="en">
 <head>
     <meta charset="utf-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, minimum-scale=1.0, maximum-scale=1.0, user-scalable=no" />
-    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
-    <title>Telegram Mini Apps Vanilla JS Sample App</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>TON Claim DApp</title>
     <style>
         body {
-            --bg-color: var(--tg-theme-bg-color);
-            font: 12px/18px "Lucida Grande", "Lucida Sans Unicode", Arial, Helvetica, Verdana, sans-serif;
-            background-color: var(--bg-color);
-            color: var(--tg-theme-text-color);
-            margin: 48px 24px;
-            padding: 0;
-            color-scheme: var(--tg-color-scheme);
+            font-family: Arial, sans-serif;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            margin: 0;
+            background-color: #f0f2f5;
         }
-
-        a {
-            color: var(--tg-theme-link-color);
+        .container {
+            text-align: center;
+            padding: 20px;
         }
-        #viewport {
-            position: fixed;
-            left: 0;
-            right: 0;
-            top: 0;
-            height: var(--tg-viewport-stable-height, 100vh);
-            pointer-events: none;
-            transition: all .2s ease;
+        button {
+            padding: 10px 20px;
+            margin: 10px;
+            border: none;
+            border-radius: 5px;
+            background-color: #0088cc;
+            color: white;
+            cursor: pointer;
         }
-        #viewport:after {
-            content: '';
-            display: block;
-            position: absolute;
-            left: 0;
-            right: 0;
-            top: 0;
-            bottom: 0;
-            border-width: 4px;
-            border-style: solid;
-            border-image: linear-gradient(45deg, rgba(64, 224, 208, .5), rgba(173, 255, 47, .5)) 1;
-        }
-
-        #viewport-params-size,
-        #viewport-params-expand {
-            content: attr(text);
-            position: absolute;
-            display: inline-block;
-            background: var(--tg-theme-link-color, rgb(64, 224, 208));
-            right: 4px;
-            left: auto;
-            font-size: 8px;
-            padding: 4px;
-            vertical-align: top;
-        }
-        #viewport-params-size {
-            top: 4px;
-        }
-        #viewport-params-expand {
-            top: 30px;
+        button:disabled {
+            background-color: #ccc;
         }
     </style>
     <script src="https://unpkg.com/@tonconnect/ui@latest/dist/tonconnect-ui.min.js"></script>
 </head>
-
 <body>
-    <main>
-        <div align="center">
-            <a href="https://ton.org/"><img width="48" src="./assets/tapps.png" alt="TON logo"></a>
-        </div>
-        <h1>TON Claim Uygulaması</h1>
-        
-        <!-- Cüzdan Bağlama Bölümü -->
+    <div class="container">
+        <h1>TON Claim DApp</h1>
         <div id="wallet-section">
-            <button onclick="connectWallet()" id="connect-button">Cüzdanı Bağla</button>
+            <button onclick="connectWallet()" id="connect-button">Connect Wallet</button>
             <div id="wallet-address" style="display:none;"></div>
         </div>
-
-        <!-- Claim Bölümü -->
         <div id="claim-section" style="display:none;">
-            <button onclick="claimTokens()" id="claim-button">Tokenları Al</button>
+            <button onclick="claimTokens()" id="claim-button">Claim 0.25 TON</button>
         </div>
-    </main>
-    <div id="viewport"></div>
-    <div id="viewport-params-size"></div>
-    <div id="viewport-params-expand"></div>
-    <script src="https://telegram.org/js/telegram-web-app.js"></script>
+    </div>
+
     <script>
-        // Init TWA
-        Telegram.WebApp.ready();
-
-        // Event occurs whenever theme settings are changed in the user's Telegram app (including switching to night mode).
-        Telegram.WebApp.onEvent('themeChanged', function() {
-            document.documentElement.className = Telegram.WebApp.colorScheme;
-        });
-
-        // Show main button
-        Telegram.WebApp.MainButton.setParams({
-            text: 'Main Button'
-        });
-        Telegram.WebApp.MainButton.onClick(function () {
-            Telegram.WebApp.showAlert('Main Button was clicked')
-        });	
-        Telegram.WebApp.MainButton.show();
-
-        // Function to call showPopup API
-        function showPopup() {
-            Telegram.WebApp.showPopup({
-                title: 'Title',
-                message: 'Some message',
-                buttons: [
-                    {id: 'link', type: 'default', text: 'Open ton.org'},
-                    {type: 'cancel'},
-                ]
-            }, function(btn) {
-                if (btn === 'link') {
-                    Telegram.WebApp.openLink('https://ton.org/');
-                }
-            });
-        };
-
-        // Function to toggle main TWA button
-        function toggleMainButton() {
-            if (Telegram.WebApp.MainButton.isVisible) {
-                Telegram.WebApp.MainButton.hide();
-            } else {
-                Telegram.WebApp.MainButton.show();
-            }
-        };
-
-        function setViewportData() {
-            var sizeEl = document.getElementById('viewport-params-size');
-            sizeEl.innerText = 'width: ' + window.innerWidth + ' x ' + 
-                'height: ' + Telegram.WebApp.viewportStableHeight;
-
-            var expandEl = document.querySelector('#viewport-params-expand');
-            expandEl.innerText = 'Is Expanded: ' + (Telegram.WebApp.isExpanded ? 'true' : 'false');
-        }
-
-        Telegram.WebApp.setHeaderColor('secondary_bg_color');
-
-        setViewportData();
-        Telegram.WebApp.onEvent('viewportChanged', setViewportData);
-
-        Telegram.WebApp.onEvent('themeChanged', function() {
-            document.body.setAttribute('style', '--bg-color:' + Telegram.WebApp.backgroundColor);
-        });
-
-        // TON Connect UI objesini oluştur
         const tonConnectUI = new TON_CONNECT_UI.TonConnectUI({
-            manifestUrl: 'https://hasan199191.github.io/my-telegram-bot/tonconnect-manifest.json'
+            manifestUrl: 'https://hasan199191.github.io/my-telegram-bot/tonconnect-manifest.json',
+            buttonRootId: 'connect-button'
         });
 
-        // Cüzdan bağlama fonksiyonu
         async function connectWallet() {
             try {
+                await tonConnectUI.disconnect();
+                
                 const wallet = await tonConnectUI.connectWallet();
-                document.getElementById('connect-button').style.display = 'none';
-                document.getElementById('wallet-address').style.display = 'block';
-                document.getElementById('wallet-address').innerHTML = `Bağlı Cüzdan: ${wallet.account.address}`;
-                document.getElementById('claim-section').style.display = 'block';
+                if (wallet) {
+                    document.getElementById('connect-button').style.display = 'none';
+                    document.getElementById('wallet-address').style.display = 'block';
+                    document.getElementById('wallet-address').innerHTML = `Connected: ${wallet.account.address}`;
+                    document.getElementById('claim-section').style.display = 'block';
+                }
             } catch (error) {
-                alert('Cüzdan bağlantısı başarısız: ' + error);
+                console.error('Connection error:', error);
+                alert('Connection error: ' + error.message);
             }
         }
 
-        // Token alma fonksiyonu
         async function claimTokens() {
-            const transaction = {
-                messages: [
-                    {
-                        address: "EQCBlhS0J_g7MZDJkBIb1mczcvbTmuiHXbi5smTxFWukVF5n", // Sizin kontrat adresiniz
-                        amount: "0", // Gönderilecek TON miktarı
-                        payload: "te6cckEBAQEAAgAAAEwAAADB" // Kontratın claim fonksiyonu için payload
-                    }
-                ],
-                validUntil: Date.now() + 1000000
-            };
-
             try {
+                const transaction = {
+                    messages: [
+                        {
+                            address: "EQCBlhS0J_g7MZDJkBIb1mczcvbTmuiHXbi5smTxFWukVF5n",
+                            amount: "250000000", // 0.25 TON
+                        }
+                    ],
+                    validUntil: Date.now() + 300000 // 5 minutes
+                };
+
+                document.getElementById('claim-button').disabled = true;
                 const result = await tonConnectUI.sendTransaction(transaction);
-                alert('İşlem başarılı! TX Hash: ' + result.boc);
+                alert('Transaction successful! Hash: ' + result.boc);
             } catch (error) {
-                alert('İşlem hatası: ' + error);
+                console.error('Transaction error:', error);
+                alert('Transaction failed: ' + error.message);
+            } finally {
+                document.getElementById('claim-button').disabled = false;
             }
         }
-    </script>
 
-    <!-- Eruda is console for mobile browsers -->
-    <script src="https://cdn.jsdelivr.net/npm/eruda"></script>
-    <script>eruda.init();</script>
+        // Handle wallet connection status
+        tonConnectUI.onStatusChange(wallet => {
+            if (!wallet) {
+                document.getElementById('connect-button').style.display = 'block';
+                document.getElementById('wallet-address').style.display = 'none';
+                document.getElementById('claim-section').style.display = 'none';
+            }
+        });
+    </script>
 </body>
 </html>
