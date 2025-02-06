@@ -5,15 +5,16 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>TON Claim DApp</title>
     <script src="https://unpkg.com/@tonconnect/ui@latest/dist/tonconnect-ui.min.js"></script>
+    <script src="https://unpkg.com/@ton/ton/dist/browser/ton.min.js"></script>
 </head>
 <body>
-    <div style="text-align: center; padding: 20px;">
+    <div style="text-align: center;">
         <h1>TON Claim DApp</h1>
         <div id="wallet-section">
             <button id="connect-button">Connect Wallet</button>
-            <div id="wallet-status"></div>
+            <div id="counter-value"></div>
         </div>
-        <div id="claim-section" style="display:none; margin-top: 20px;">
+        <div id="claim-section" style="display:none;">
             <button onclick="claimTokens()" id="claim-button">Claim 0.25 TON</button>
         </div>
     </div>
@@ -23,37 +24,29 @@
             manifestUrl: 'https://hasan199191.github.io/my-telegram-bot/tonconnect-manifest.json'
         });
 
-        async function checkConnection() {
-            const wallet = await tonConnectUI.getWalletInfo();
-            if (wallet) {
-                document.getElementById('wallet-status').innerText = `Connected: ${wallet.account.address}`;
-                document.getElementById('claim-section').style.display = 'block';
-                document.getElementById('connect-button').style.display = 'none';
+        const contractAddress = "EQCBlhS0J_g7MZDJkBIb1mczcvbTmuiHXbi5smTxFWukVF5n";
+
+        async function updateCounter() {
+            try {
+                const client = new ton.TonClient({ endpoint: 'https://testnet.toncenter.com/api/v2/jsonRPC' });
+                const result = await client.callGetMethod(contractAddress, 'counter');
+                document.getElementById('counter-value').innerText = `Current Counter: ${result.stack[0]}`;
+            } catch (error) {
+                console.error('Counter fetch error:', error);
             }
         }
 
-        tonConnectUI.onStatusChange(async (wallet) => {
-            if (wallet) {
-                await checkConnection();
-            } else {
-                document.getElementById('claim-section').style.display = 'none';
-                document.getElementById('connect-button').style.display = 'block';
-                document.getElementById('wallet-status').innerText = '';
-            }
-        });
-
         async function claimTokens() {
             try {
-                const wallet = await tonConnectUI.getWalletInfo();
-                if (!wallet) {
-                    throw new Error('Wallet not connected');
+                if (!tonConnectUI.connected) {
+                    throw new Error('Please connect wallet first');
                 }
 
                 const transaction = {
                     messages: [
                         {
-                            address: "EQCBlhS0J_g7MZDJkBIb1mczcvbTmuiHXbi5smTxFWukVF5n",
-                            amount: "250000000"
+                            address: contractAddress,
+                            amount: "250000000", // 0.25 TON
                         }
                     ],
                     validUntil: Date.now() + 300000
@@ -62,17 +55,24 @@
                 document.getElementById('claim-button').disabled = true;
                 const result = await tonConnectUI.sendTransaction(transaction);
                 console.log('Transaction sent:', result);
+                
+                // Wait for transaction and update counter
+                setTimeout(updateCounter, 5000);
+                
                 alert('Transaction sent successfully!');
             } catch (error) {
                 console.error('Transaction error:', error);
-                alert(error.message || 'Transaction failed');
+                alert(error.message);
             } finally {
                 document.getElementById('claim-button').disabled = false;
             }
         }
 
-        // Initial connection check
-        checkConnection();
+        // Check counter value every 10 seconds
+        setInterval(updateCounter, 10000);
+        
+        // Initial counter check
+        updateCounter();
     </script>
 </body>
 </html>
